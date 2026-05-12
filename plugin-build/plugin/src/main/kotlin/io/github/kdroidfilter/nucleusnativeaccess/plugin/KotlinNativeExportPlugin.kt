@@ -1,5 +1,8 @@
 package io.github.kdroidfilter.nucleusnativeaccess.plugin
 
+import io.github.kdroidfilter.nucleusnativeaccess.plugin.catalog.kotlinxCoroutineDependency
+import io.github.kdroidfilter.nucleusnativeaccess.plugin.catalog.kotlinxCoroutineJvmDependency
+import io.github.kdroidfilter.nucleusnativeaccess.plugin.catalog.kotlinxCoroutineTestDependency
 import io.github.kdroidfilter.nucleusnativeaccess.plugin.tasks.GenerateNativeBridgesTask
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
@@ -127,21 +130,20 @@ class KotlinNativeExportPlugin : Plugin<Project> {
         project.tasks.register("generateKneJvmProxies") { it.dependsOn(generateBridges) }
 
         // ── Coroutines dependency (required for suspend function support) ──
-        val coroutinesVersion = "1.10.2"
         nativeTarget?.let { target ->
             kotlin.sourceSets.findByName("${target.name}Main")?.dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+                implementation(project.kotlinxCoroutineDependency)
             }
         }
         kotlin.sourceSets.findByName("nativeMain")?.dependencies {
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+            implementation(project.kotlinxCoroutineDependency)
         }
 
         kotlin.sourceSets.findByName(jvmMainSourceSetName)?.dependencies {
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:$coroutinesVersion")
+            implementation(project.kotlinxCoroutineJvmDependency)
         }
         kotlin.sourceSets.findByName(jvmTestSourceSetName)?.dependencies {
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+            implementation(project.kotlinxCoroutineTestDependency)
         }
 
         // Wire generated bridges into the native source set (try nativeMain, fall back to <target>Main)

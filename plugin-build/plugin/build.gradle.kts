@@ -1,5 +1,3 @@
-import org.gradle.api.publish.maven.MavenPublication
-
 plugins {
     kotlin("jvm")
     `java-gradle-plugin`
