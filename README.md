@@ -1,6 +1,6 @@
 # Nucleus Native Access
 
-[![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fplugins.gradle.org%2Fm2%2Fio%2Fgithub%2Fkdroidfilter%2Fnucleusnativeaccess%2Fio.github.kdroidfilter.nucleusnativeaccess.gradle.plugin%2Fmaven-metadata.xml&label=Gradle%20Plugin%20Portal)](https://plugins.gradle.org/plugin/io.github.kdroidfilter.nucleusnativeaccess)
+[![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fplugins.gradle.org%2Fm2%2Fdev%2Fnucleusframework%2Fnna%2Fdev.nucleusframework.nna.gradle.plugin%2Fmaven-metadata.xml&label=Gradle%20Plugin%20Portal)](https://plugins.gradle.org/plugin/dev.nucleusframework.nna)
 
 A Gradle plugin that lets you use **Kotlin/Native code directly from the JVM** as if it were a regular JVM library. Classes, methods, properties, enums, nullable types, companion objects, exception propagation, callbacks &mdash; everything is transparent to the JVM developer.
 
@@ -46,7 +46,7 @@ pluginManagement {
 // build.gradle.kts
 plugins {
     kotlin("multiplatform") version "2.3.20"
-    id("io.github.kdroidfilter.nucleusnativeaccess") version "0.1.0"
+    id("dev.nucleusframework.nna") version "0.1.0"
 }
 ```
 
@@ -477,7 +477,7 @@ The Compose compiler plugin and Nucleus Native Access both add Kotlin/Native tar
 
 ```
 my-app/
-├── native/              ← Kotlin/Native + nucleusnativeaccess (no Compose)
+├── native/              ← Kotlin/Native + nna (no Compose)
 │   └── build.gradle.kts
 ├── app/                 ← Compose Desktop + depends on :native
 │   └── build.gradle.kts
@@ -489,7 +489,7 @@ my-app/
 ```kotlin
 plugins {
     kotlin("multiplatform") version "2.3.20"
-    id("io.github.kdroidfilter.nucleusnativeaccess")
+    id("dev.nucleusframework.nna")
 }
 
 kotlin {
@@ -605,7 +605,7 @@ The plugin is inspired by two projects:
 - **[swift-java](https://github.com/swiftlang/swift-java)** (Apple) &mdash; how Swift code is made callable from Java via FFM `MethodHandle` downcalls. We adapted the FFM binding generation: each method gets a `FunctionDescriptor` + `MethodHandle`, classes use `Cleaner` for GC safety.
 
 ```
-plugin-build/plugin/src/main/kotlin/io/github/kdroidfilter/nucleusnativeaccess/plugin/
+plugin-build/plugin/src/main/kotlin/dev/nucleusframework/nna/plugin/
 ├── ir/                          # Intermediate representation (inspired by SirModule)
 │   └── KneIR.kt                 # KneModule, KneClass, KneFunction, KneType...
 ├── analysis/

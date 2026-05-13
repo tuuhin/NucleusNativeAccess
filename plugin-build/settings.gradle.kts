@@ -31,7 +31,7 @@ develocity {
     }
 }
 
-rootProject.name = "nucleusnativeaccess-plugin"
+rootProject.name = "nna-plugin"
 
-include(":nucleusnativeaccess")
-project(":nucleusnativeaccess").projectDir = file("plugin")
+include(":nna")
+project(":nna").projectDir = file("plugin")
