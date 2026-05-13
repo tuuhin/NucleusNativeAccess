@@ -1,6 +1,6 @@
 plugins {
     kotlin("multiplatform")
-    id("io.github.kdroidfilter.nucleusnativeaccess")
+    id("dev.nucleusframework.nna")
 }
 
 kotlin {

@@ -1,8 +1,8 @@
-package io.github.kdroidfilter.nucleusnativeaccess.plugin.analysis
+package dev.nucleusframework.nna.plugin.analysis
 
-import io.github.kdroidfilter.nucleusnativeaccess.plugin.codegen.FfmProxyGenerator
-import io.github.kdroidfilter.nucleusnativeaccess.plugin.codegen.NativeBridgeGenerator
-import io.github.kdroidfilter.nucleusnativeaccess.plugin.ir.KneModule
+import dev.nucleusframework.nna.plugin.codegen.FfmProxyGenerator
+import dev.nucleusframework.nna.plugin.codegen.NativeBridgeGenerator
+import dev.nucleusframework.nna.plugin.ir.KneModule
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property

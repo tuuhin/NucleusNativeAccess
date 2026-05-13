@@ -1,4 +1,4 @@
-package io.github.kdroidfilter.nucleusnativeaccess.plugin.ir
+package dev.nucleusframework.nna.plugin.ir
 
 import java.io.Serializable
 

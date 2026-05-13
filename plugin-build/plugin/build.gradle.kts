@@ -42,7 +42,7 @@ gradlePlugin {
 publishing {
     publications.withType<MavenPublication>().configureEach {
         if (name == "pluginMaven") {
-            artifactId = "nucleusnativeaccess"
+            artifactId = "nna"
         }
     }
 }

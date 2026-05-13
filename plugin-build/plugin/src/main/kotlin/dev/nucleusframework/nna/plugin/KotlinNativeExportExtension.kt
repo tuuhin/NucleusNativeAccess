@@ -1,4 +1,4 @@
-package io.github.kdroidfilter.nucleusnativeaccess.plugin
+package dev.nucleusframework.nna.plugin
 
 import org.gradle.api.provider.Property
 

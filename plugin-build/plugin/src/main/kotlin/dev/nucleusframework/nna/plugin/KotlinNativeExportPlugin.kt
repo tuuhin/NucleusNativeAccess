@@ -1,9 +1,9 @@
-package io.github.kdroidfilter.nucleusnativeaccess.plugin
+package dev.nucleusframework.nna.plugin
 
-import io.github.kdroidfilter.nucleusnativeaccess.plugin.catalog.kotlinxCoroutineDependency
-import io.github.kdroidfilter.nucleusnativeaccess.plugin.catalog.kotlinxCoroutineJvmDependency
-import io.github.kdroidfilter.nucleusnativeaccess.plugin.catalog.kotlinxCoroutineTestDependency
-import io.github.kdroidfilter.nucleusnativeaccess.plugin.tasks.GenerateNativeBridgesTask
+import dev.nucleusframework.nna.plugin.catalog.kotlinxCoroutineDependency
+import dev.nucleusframework.nna.plugin.catalog.kotlinxCoroutineJvmDependency
+import dev.nucleusframework.nna.plugin.catalog.kotlinxCoroutineTestDependency
+import dev.nucleusframework.nna.plugin.tasks.GenerateNativeBridgesTask
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project

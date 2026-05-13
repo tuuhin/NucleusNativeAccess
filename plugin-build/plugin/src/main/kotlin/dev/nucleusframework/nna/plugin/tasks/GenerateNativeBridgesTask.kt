@@ -1,6 +1,6 @@
-package io.github.kdroidfilter.nucleusnativeaccess.plugin.tasks
+package dev.nucleusframework.nna.plugin.tasks
 
-import io.github.kdroidfilter.nucleusnativeaccess.plugin.analysis.PsiParseWorkAction
+import dev.nucleusframework.nna.plugin.analysis.PsiParseWorkAction
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty

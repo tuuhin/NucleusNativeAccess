@@ -1,15 +1,15 @@
-package io.github.kdroidfilter.nucleusnativeaccess.plugin.analysis
+package dev.nucleusframework.nna.plugin.analysis
 
-import io.github.kdroidfilter.nucleusnativeaccess.plugin.ir.KneClass
-import io.github.kdroidfilter.nucleusnativeaccess.plugin.ir.KneConstructor
-import io.github.kdroidfilter.nucleusnativeaccess.plugin.ir.KneDataClass
-import io.github.kdroidfilter.nucleusnativeaccess.plugin.ir.KneEnum
-import io.github.kdroidfilter.nucleusnativeaccess.plugin.ir.KneFunction
-import io.github.kdroidfilter.nucleusnativeaccess.plugin.ir.KneInterface
-import io.github.kdroidfilter.nucleusnativeaccess.plugin.ir.KneModule
-import io.github.kdroidfilter.nucleusnativeaccess.plugin.ir.KneParam
-import io.github.kdroidfilter.nucleusnativeaccess.plugin.ir.KneProperty
-import io.github.kdroidfilter.nucleusnativeaccess.plugin.ir.KneType
+import dev.nucleusframework.nna.plugin.ir.KneClass
+import dev.nucleusframework.nna.plugin.ir.KneConstructor
+import dev.nucleusframework.nna.plugin.ir.KneDataClass
+import dev.nucleusframework.nna.plugin.ir.KneEnum
+import dev.nucleusframework.nna.plugin.ir.KneFunction
+import dev.nucleusframework.nna.plugin.ir.KneInterface
+import dev.nucleusframework.nna.plugin.ir.KneModule
+import dev.nucleusframework.nna.plugin.ir.KneParam
+import dev.nucleusframework.nna.plugin.ir.KneProperty
+import dev.nucleusframework.nna.plugin.ir.KneType
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreApplicationEnvironment
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreApplicationEnvironmentMode
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreProjectEnvironment
