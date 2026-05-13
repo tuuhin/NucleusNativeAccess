@@ -1,12 +1,18 @@
 package io.github.kdroidfilter.nucleusnativeaccess.plugin
 
+import io.github.kdroidfilter.nucleusnativeaccess.plugin.catalog.kotlinxCoroutineDependency
+import io.github.kdroidfilter.nucleusnativeaccess.plugin.catalog.kotlinxCoroutineJvmDependency
+import io.github.kdroidfilter.nucleusnativeaccess.plugin.catalog.kotlinxCoroutineTestDependency
 import io.github.kdroidfilter.nucleusnativeaccess.plugin.tasks.GenerateNativeBridgesTask
+import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.testing.Test
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
+import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
 import java.io.File
 
 /**
@@ -43,27 +49,50 @@ class KotlinNativeExportPlugin : Plugin<Project> {
 
     private fun configureKmp(project: Project, extension: KotlinNativeExportExtension) {
         val kotlin = project.extensions.getByType(KotlinMultiplatformExtension::class.java)
+
         val libName = extension.nativeLibName.get()
         val pkg = extension.nativePackage.get()
+
+        // read the jvm target name
+        // JVM target should exist otherwise the plugin is of no use
+        val jvmTarget = kotlin.targets.filterIsInstance<KotlinJvmTarget>()
+            .firstOrNull() ?: throw GradleException("Sorry this plugin required jvm target to work with")
+
+        val jvmMainSourceSetName = jvmTarget.name + "Main"
+        val jvmTestSourceSetName = jvmTarget.name + "Test"
+        val jvmMainTaskName = jvmMainSourceSetName.replaceFirstChar { it.titlecase() }
+        val jvmTaskName = jvmTarget.name.replaceFirstChar { it.titlecase() }
 
         val nativeBridgesDir = project.layout.buildDirectory.dir("generated/kne/nativeBridges")
         val jvmProxiesDir = project.layout.buildDirectory.dir("generated/kne/jvmProxies")
         val jvmResourcesDir = project.layout.buildDirectory.dir("generated/kne/jvmResources")
 
-        // Detect native target and its source sets.
+        // Detect the first native target and its source sets.
         // Convention: use src/nativeMain if it exists (shared native source set),
         // otherwise fall back to the first native target's main source set (e.g. linuxX64Main).
         val nativeTarget = kotlin.targets
             .filterIsInstance<KotlinNativeTarget>()
             .firstOrNull()
 
-        val userNativeSrcDirs = mutableListOf<java.io.File>()
+
+        val nativeTargetTaskName = nativeTarget?.name?.replaceFirstChar { it.titlecase() } ?: "Native"
+
+        val userNativeSrcDirs = mutableListOf<File>()
+
+        // check if native main dir present
         val nativeMainDir = project.projectDir.resolve("src/nativeMain/kotlin")
         if (nativeMainDir.exists()) userNativeSrcDirs.add(nativeMainDir)
+
+        // if native target present use that too
         if (nativeTarget != null) {
+            project.logger.log(
+                LogLevel.INFO,
+                "NATIVE TARGET FOUND :${nativeTarget.konanTarget.name} ALIAS:${nativeTarget.name}"
+            )
             val targetMainDir = project.projectDir.resolve("src/${nativeTarget.name}Main/kotlin")
             if (targetMainDir.exists()) userNativeSrcDirs.add(targetMainDir)
         }
+
         val userNativeSources = project.files(userNativeSrcDirs)
 
         // Collect commonMain sources for data class discovery
@@ -101,20 +130,20 @@ class KotlinNativeExportPlugin : Plugin<Project> {
         project.tasks.register("generateKneJvmProxies") { it.dependsOn(generateBridges) }
 
         // ── Coroutines dependency (required for suspend function support) ──
-        val coroutinesVersion = "1.10.2"
         nativeTarget?.let { target ->
             kotlin.sourceSets.findByName("${target.name}Main")?.dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+                implementation(project.kotlinxCoroutineDependency)
             }
         }
         kotlin.sourceSets.findByName("nativeMain")?.dependencies {
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+            implementation(project.kotlinxCoroutineDependency)
         }
-        kotlin.sourceSets.findByName("jvmMain")?.dependencies {
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:$coroutinesVersion")
+
+        kotlin.sourceSets.findByName(jvmMainSourceSetName)?.dependencies {
+            implementation(project.kotlinxCoroutineJvmDependency)
         }
-        kotlin.sourceSets.findByName("jvmTest")?.dependencies {
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+        kotlin.sourceSets.findByName(jvmTestSourceSetName)?.dependencies {
+            implementation(project.kotlinxCoroutineTestDependency)
         }
 
         // Wire generated bridges into the native source set (try nativeMain, fall back to <target>Main)
@@ -123,21 +152,20 @@ class KotlinNativeExportPlugin : Plugin<Project> {
         nativeSourceSet?.kotlin?.srcDir(nativeBridgesDir)
 
         // Wire generated JVM proxies into jvmMain
-        kotlin.sourceSets.findByName("jvmMain")?.kotlin?.srcDir(jvmProxiesDir)
+        kotlin.sourceSets.findByName(jvmMainSourceSetName)?.kotlin?.srcDir(jvmProxiesDir)
 
         // Wire generated GraalVM metadata into JVM resources
-        kotlin.sourceSets.findByName("jvmMain")?.resources?.srcDir(jvmResourcesDir)
+        kotlin.sourceSets.findByName(jvmMainSourceSetName)?.resources?.srcDir(jvmResourcesDir)
 
         // Ensure compilation waits for generation
         project.tasks.configureEach { task ->
             val name = task.name
             if (name.startsWith("compileKotlin") &&
-                (name.contains("Native", ignoreCase = true) || name.contains("LinuxX64") ||
-                    name.contains("MacosArm64") || name.contains("MingwX64"))
+                (name.contains("Native", ignoreCase = true) || name.contains(nativeTargetTaskName, ignoreCase = true))
             ) {
                 task.dependsOn(generateBridges)
             }
-            if (name == "compileKotlinJvm" || name == "compileKotlinJvmMain") {
+            if (name == "compileKotlin$jvmTaskName" || name == "compileKotlin$jvmMainTaskName") {
                 task.dependsOn(generateBridges)
             }
         }
@@ -156,10 +184,17 @@ class KotlinNativeExportPlugin : Plugin<Project> {
         // ── Bundle native lib into JVM resources (zero-config deployment) ────
 
         if (nativeTarget != null) {
-            val targetName = nativeTarget.name
-            val targetCap = targetName.replaceFirstChar { it.uppercaseChar() }
+            // konan target names are the actual target name but we can have an associated alias
+            val targetAliasName = nativeTarget.name
+            val targetName = nativeTarget.konanTarget.name
+
+            project.logger.log(LogLevel.INFO, "TARGET ALIAS :$targetAliasName, TARGET NAME:$targetName")
+
+            val targetCap = targetAliasName.replaceFirstChar { it.uppercaseChar() }
             val libCap = libName.replaceFirstChar { it.uppercaseChar() }
+
             val platform = mapTargetToPlatform(targetName)
+
             val linkTaskName = "link${libCap}ReleaseShared$targetCap"
             val nativeLibResourceDir = project.layout.buildDirectory.dir("generated/kne/nativeLib")
 
@@ -170,7 +205,7 @@ class KotlinNativeExportPlugin : Plugin<Project> {
                 task.dependsOn(linkTaskName)
                 task.doLast {
                     val releaseDir = buildDir
-                        .dir("bin/$targetName/${libName}ReleaseShared").get().asFile
+                        .dir("bin/$targetAliasName/${libName}ReleaseShared").get().asFile
                     val nativeFile = releaseDir.listFiles()?.firstOrNull { f ->
                         f.extension in listOf("so", "dylib", "dll")
                     }
@@ -184,11 +219,11 @@ class KotlinNativeExportPlugin : Plugin<Project> {
             }
 
             // Wire native lib resource dir into JVM resources
-            kotlin.sourceSets.findByName("jvmMain")?.resources?.srcDir(nativeLibResourceDir)
+            kotlin.sourceSets.findByName(jvmMainSourceSetName)?.resources?.srcDir(nativeLibResourceDir)
 
             // Ensure processResources waits for the native lib copy
             project.tasks.configureEach { task ->
-                if (task.name == "jvmProcessResources" || task.name == "processJvmMainResources") {
+                if (task.name == "${jvmTarget.name}ProcessResources" || task.name == "process${jvmMainTaskName}Resources") {
                     task.dependsOn(copyNativeLib)
                 }
             }
@@ -200,11 +235,18 @@ class KotlinNativeExportPlugin : Plugin<Project> {
     }
 
     /** Map Kotlin/Native target name to platform directory name. */
-    private fun mapTargetToPlatform(targetName: String): String = when {
-        targetName.startsWith("linux") -> if (targetName.contains("Arm") || targetName.contains("aarch")) "linux-aarch64" else "linux-x64"
-        targetName.startsWith("macos") -> if (targetName.contains("Arm") || targetName.contains("arm64") || targetName.contains("Arm64")) "darwin-aarch64" else "darwin-x64"
-        targetName.startsWith("mingw") -> if (targetName.contains("Arm")) "win32-arm64" else "win32-x64"
-        else -> "unknown"
+    private fun mapTargetToPlatform(targetName: String): String {
+
+        val isArm = targetName.contains("Arm")
+        val isArch = targetName.contains("aarch")
+        val isArm64 = targetName.contains("arm64") || targetName.contains("Arm64")
+
+        return when {
+            targetName.startsWith("linux") -> if (isArm || isArch) "linux-aarch64" else "linux-x64"
+            targetName.startsWith("macos") -> if (isArm || isArm64) "darwin-aarch64" else "darwin-x64"
+            targetName.startsWith("mingw") -> if (isArm) "win32-arm64" else "win32-x64"
+            else -> "unknown"
+        }
     }
 
     /**
